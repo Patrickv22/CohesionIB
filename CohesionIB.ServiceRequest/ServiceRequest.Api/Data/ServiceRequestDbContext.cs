@@ -2,9 +2,9 @@
 
 namespace ServiceRequest.Api.Data
 {
-    public class ServiceRequestDataContext : DbContext
+    public class ServiceRequestDbContext : DbContext
     {
-        public ServiceRequestDataContext(DbContextOptions options) : base(options) { }
+        public ServiceRequestDbContext(DbContextOptions options) : base(options) { }
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
     }
 }
