@@ -44,9 +44,24 @@ namespace ServiceRequest.Api.Providers
             }
         }
 
-        public Task<(bool success, Models.ServiceRequest serviceRequest, string errorMessage)> GetServiceRequestAsync(Guid id)
+        public async Task<(bool success, Models.ServiceRequest serviceRequest, string errorMessage)> GetServiceRequestAsync(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var serviceRequest = await _context.ServiceRequests.FirstOrDefaultAsync(x => x.Id == id);
+                if (serviceRequest != null)
+                {
+                    var result = _mapper.Map<Data.ServiceRequest, Models.ServiceRequest>(serviceRequest);
+                    return (true, result, null);
+                }
+
+                return (false, null, "No records found");
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex.ToString());
+                return (false, null, ex.Message);
+            }
         }
 
         public Task<(bool success, Models.ServiceRequest serviceRequest, string errorMessage)> CreateServiceRequestAsync(Data.ServiceRequest serviceRequest)
@@ -72,27 +87,27 @@ namespace ServiceRequest.Api.Providers
                 {
                     new Data.ServiceRequest
                     {
-                        Id = Guid.NewGuid(), BuildingCode = "COH", Description = "Leaky pipes",
+                        Id = Guid.Parse("f335f0f0-7575-4f39-8836-d12572c74fbc"), BuildingCode = "COH", Description = "Leaky pipes",
                         CurrentStatus = CurrentStatusEnum.Created, CreatedBy = "John Smith", CreatedDate = DateTime.Now
                     },
                     new Data.ServiceRequest
                     {
-                        Id = Guid.NewGuid(), BuildingCode = "BAR", Description = "Heat is not working",
+                        Id = Guid.Parse("d14cc6d0-de43-47f8-af95-e2042b4406a6"), BuildingCode = "BAR", Description = "Heat is not working",
                         CurrentStatus = CurrentStatusEnum.Created, CreatedBy = "Susan Adams", CreatedDate = DateTime.Now
                     },
                     new Data.ServiceRequest
                     {
-                        Id = Guid.NewGuid(), BuildingCode = "COH", Description = "Cracks in ceiling",
+                        Id = Guid.Parse("8a59c7a6-2a59-4bdd-beb6-70f61d762db1"), BuildingCode = "COH", Description = "Cracks in ceiling",
                         CurrentStatus = CurrentStatusEnum.InProgress, CreatedBy = "John Smith", CreatedDate = DateTime.Now.AddDays(-2)
                     },
                     new Data.ServiceRequest
                     {
-                        Id = Guid.NewGuid(), BuildingCode = "BLD", Description = "AC is not working",
+                        Id = Guid.Parse("faac06dd-4bf6-449a-ab1d-0a98c90bbc39"), BuildingCode = "BLD", Description = "AC is not working",
                         CurrentStatus = CurrentStatusEnum.Complete, CreatedBy = "Tom Jones", CreatedDate = DateTime.Now.AddDays(-7)
                     },
                     new Data.ServiceRequest
                     {
-                        Id = Guid.NewGuid(), BuildingCode = "BLD", Description = "Toilets not working",
+                        Id = Guid.Parse("3eece8a4-7828-4675-a61f-116d3e5686d5"), BuildingCode = "BLD", Description = "Toilets not working",
                         CurrentStatus = CurrentStatusEnum.Cancelled, CreatedBy = "Tom Jones", CreatedDate = DateTime.Now.AddDays(-3)
                     }
                 };
