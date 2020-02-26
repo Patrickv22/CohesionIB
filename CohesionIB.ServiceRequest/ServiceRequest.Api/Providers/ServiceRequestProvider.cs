@@ -64,12 +64,37 @@ namespace ServiceRequest.Api.Providers
             }
         }
 
-        public Task<(bool success, Models.ServiceRequest serviceRequest, string errorMessage)> CreateServiceRequestAsync(Data.ServiceRequest serviceRequest)
+        public async Task<(bool success, Models.ServiceRequest serviceRequest, string errorMessage)> CreateServiceRequestAsync(Models.ServiceRequest serviceRequest)
         {
-            throw new NotImplementedException();
+            try
+            {
+                //assign a new guid
+                serviceRequest.Id = Guid.NewGuid();
+
+                //perform validation - skipping for now :(
+
+                //convert to data model
+                var dataModel = _mapper.Map<Models.ServiceRequest, Data.ServiceRequest>(serviceRequest);
+
+                //add entity
+                await _context.AddAsync(dataModel);
+                _context.SaveChanges();
+
+                //convert to view model
+                var viewModel = _mapper.Map<Data.ServiceRequest, Models.ServiceRequest>(dataModel);
+                
+                //return tuple
+                return (true, viewModel, null);
+
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex.ToString());
+                return (false, null, ex.Message);
+            }
         }
 
-        public Task<(bool success, Models.ServiceRequest serviceRequest, string errorMessage)> UpdateServiceRequestAsync(Data.ServiceRequest serviceRequest)
+        public Task<(bool success, Models.ServiceRequest serviceRequest, string errorMessage)> UpdateServiceRequestAsync(Models.ServiceRequest serviceRequest)
         {
             throw new NotImplementedException();
         }

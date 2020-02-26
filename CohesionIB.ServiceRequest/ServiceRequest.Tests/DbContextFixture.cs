@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using ServiceRequest.Api.Data;
-using System;
-using AutoMapper;
 using ServiceRequest.Api.Profiles;
+using System;
 
 namespace ServiceRequest.Tests
 {
@@ -10,6 +10,8 @@ namespace ServiceRequest.Tests
     {
         public ServiceRequestDbContext DbContext { get; set; }
         public Mapper Mapper { get; set; }
+        public Api.Models.ServiceRequest NewServiceRequest { get; set; }
+        public Guid NewGuid { get; set; } = Guid.NewGuid();
 
         public DbContextFixture()
         {
@@ -21,6 +23,15 @@ namespace ServiceRequest.Tests
             var profile = new ServiceRequestProfile();
             var mapperConfig = new MapperConfiguration(config => config.AddProfile(profile));
             Mapper = new Mapper(mapperConfig);
+
+            NewServiceRequest = new Api.Models.ServiceRequest
+            {
+                BuildingCode = "AAA",
+                Description = "Broken Glass",
+                CurrentStatus = Api.Models.CurrentStatusEnum.Created,
+                CreatedBy = "Pete Johnson",
+                CreatedDate = DateTime.Now
+            };
         }
 
         public void Dispose()

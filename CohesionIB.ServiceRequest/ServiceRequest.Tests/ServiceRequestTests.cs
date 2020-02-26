@@ -1,7 +1,5 @@
-using System;
-using AutoMapper;
-using ServiceRequest.Api.Profiles;
 using ServiceRequest.Api.Providers;
+using System;
 using System.Linq;
 using Xunit;
 
@@ -55,9 +53,23 @@ namespace ServiceRequest.Tests
             Assert.NotNull(result.errorMessage);
         }
 
+        [Fact]
+        public async void create_new_service_request_success()
+        {
+            var provider = new ServiceRequestProvider(_fixture.DbContext, null, _fixture.Mapper);
 
+            var result = await provider.CreateServiceRequestAsync(_fixture.NewServiceRequest);
 
+            Assert.True(result.success);
+            Assert.NotNull(result.serviceRequest);
+            Assert.IsType<Api.Models.ServiceRequest>(result.serviceRequest);
+            Assert.Null(result.errorMessage);
 
+            var results = await provider.GetServiceRequestsAsync();
+            Assert.True(results.serviceRequests.Count() == 6);
+        }
+
+        
 
 
     }
