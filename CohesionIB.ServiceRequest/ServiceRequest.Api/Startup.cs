@@ -1,16 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.AspNetCore;
+using ServiceRequest.Api.Data;
+using ServiceRequest.Api.Interfaces;
+using ServiceRequest.Api.Providers;
 
 namespace ServiceRequest.Api
 {
@@ -32,6 +30,12 @@ namespace ServiceRequest.Api
                 .WriteTo.File("logs/log.txt")
                 .CreateLogger();
 
+            services.AddScoped<IServiceRequestProvider, ServiceRequestProvider>();
+            services.AddAutoMapper(typeof(Startup));
+            services.AddDbContext<ServiceRequestDbContext>(options =>
+                {
+                    options.UseInMemoryDatabase("ServiceRequests");
+                });
             services.AddControllers();
         }
 

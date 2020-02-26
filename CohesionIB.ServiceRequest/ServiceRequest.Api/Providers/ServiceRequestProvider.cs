@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ServiceRequest.Api.Data;
 using ServiceRequest.Api.Extensions;
+using ServiceRequest.Api.Models;
+using CurrentStatusEnum = ServiceRequest.Api.Data.CurrentStatusEnum;
 
 namespace ServiceRequest.Api.Providers
 {
@@ -89,11 +91,16 @@ namespace ServiceRequest.Api.Providers
             }
         }
 
-        public async Task<(bool success, Models.ServiceRequest serviceRequest, string errorMessage)> UpdateServiceRequestAsync(Models.ServiceRequest serviceRequest)
+        public async Task<(ReturnStatusEnum status, Models.ServiceRequest serviceRequest, string errorMessage)> UpdateServiceRequestAsync(Models.ServiceRequest serviceRequest)
         {
             try
             {
                 var dataModel = await _context.ServiceRequests.FirstOrDefaultAsync(x => x.Id == serviceRequest.Id);
+
+                if (dataModel == null)
+                {
+                    return (ReturnStatusEnum.NotFound, null, $"Service request with Id {serviceRequest.Id} was not found");
+                }
 
                 //perform validation - skipping for now :(
 
@@ -110,12 +117,12 @@ namespace ServiceRequest.Api.Providers
 
                 var viewModel = _mapper.Map<Data.ServiceRequest, Models.ServiceRequest>(dataModel);
 
-                return (true, viewModel, null);
+                return (ReturnStatusEnum.Success, viewModel, null);
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex.ToString());
-                return (false, null, ex.Message);
+                return (ReturnStatusEnum.BadRequest, null, ex.Message);
             }
         }
 

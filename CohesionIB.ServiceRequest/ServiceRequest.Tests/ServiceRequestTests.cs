@@ -83,7 +83,7 @@ namespace ServiceRequest.Tests
 
             var result = await provider.UpdateServiceRequestAsync(sr);
 
-            Assert.True(result.success);
+            Assert.True(result.status == Api.Models.ReturnStatusEnum.Success);
             Assert.NotNull(result.serviceRequest);
             Assert.IsType<Api.Models.ServiceRequest>(result.serviceRequest);
             Assert.Null(result.errorMessage);
