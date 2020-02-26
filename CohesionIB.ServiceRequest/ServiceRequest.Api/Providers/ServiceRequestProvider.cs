@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ServiceRequest.Api.Data;
+using ServiceRequest.Api.Extensions;
 
 namespace ServiceRequest.Api.Providers
 {
@@ -68,24 +69,18 @@ namespace ServiceRequest.Api.Providers
         {
             try
             {
-                //assign a new guid
                 serviceRequest.Id = Guid.NewGuid();
 
                 //perform validation - skipping for now :(
 
-                //convert to data model
                 var dataModel = _mapper.Map<Models.ServiceRequest, Data.ServiceRequest>(serviceRequest);
 
-                //add entity
                 await _context.AddAsync(dataModel);
                 _context.SaveChanges();
 
-                //convert to view model
                 var viewModel = _mapper.Map<Data.ServiceRequest, Models.ServiceRequest>(dataModel);
-                
-                //return tuple
-                return (true, viewModel, null);
 
+                return (true, viewModel, null);
             }
             catch (Exception ex)
             {
@@ -94,14 +89,55 @@ namespace ServiceRequest.Api.Providers
             }
         }
 
-        public Task<(bool success, Models.ServiceRequest serviceRequest, string errorMessage)> UpdateServiceRequestAsync(Models.ServiceRequest serviceRequest)
+        public async Task<(bool success, Models.ServiceRequest serviceRequest, string errorMessage)> UpdateServiceRequestAsync(Models.ServiceRequest serviceRequest)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var dataModel = await _context.ServiceRequests.FirstOrDefaultAsync(x => x.Id == serviceRequest.Id);
+
+                //perform validation - skipping for now :(
+
+                //Update data model - probably might use the mapper, but the was the quickest for now.
+                dataModel.BuildingCode = serviceRequest.BuildingCode;
+                dataModel.Description = serviceRequest.Description;
+                dataModel.CurrentStatus = serviceRequest.CurrentStatus.TransformCurrentStatus();
+                dataModel.LastModifiedBy = serviceRequest.LastModifiedBy;
+                dataModel.LastModifiedDate = serviceRequest.LastModifiedDate;
+
+                _context.Entry(dataModel).State = EntityState.Modified;
+                _context.Update(dataModel);
+                await _context.SaveChangesAsync();
+
+                var viewModel = _mapper.Map<Data.ServiceRequest, Models.ServiceRequest>(dataModel);
+
+                return (true, viewModel, null);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex.ToString());
+                return (false, null, ex.Message);
+            }
         }
 
-        public Task<(bool success, string errorMessage)> DeleteServiceRequestAsync(Guid id)
+        public async Task<(bool success, string errorMessage)> DeleteServiceRequestAsync(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var dataModel = await _context.ServiceRequests.FirstOrDefaultAsync(x => x.Id == id);
+                if (dataModel != null)
+                {
+                    _context.Remove(dataModel);
+                    _context.SaveChanges();
+                    return (true, null);
+                }
+
+                return (false, $"Request with id {id.ToString()} was not found");
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex.ToString());
+                return (false, ex.Message);
+            }
         }
 
         private void SeedData()
